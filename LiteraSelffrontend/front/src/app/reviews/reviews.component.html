@@ -1,0 +1,15 @@
+<p>reviews works!</p>
+
+<div class="reviews-container">
+    <h2>Отзывы на книги</h2>
+  
+    <div *ngFor="let review of Reviews" class="review">
+      <h3>{{ review.book?.title }}</h3>
+      <p><strong>Оценка:</strong> {{ review.rating }}/5</p>
+      <p><strong>Комментарий:</strong> {{ review.comment }}</p>
+      <p><strong>Оставлен:</strong> {{ review.created_at }}</p>
+      <p><strong>Пользователь:</strong> {{ review.user?.username }}</p>
+    </div>
+  
+    
+  </div>

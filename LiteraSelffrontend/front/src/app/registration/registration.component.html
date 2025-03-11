@@ -1,0 +1,33 @@
+<nav class="navbar">
+    <a routerLink="/home" class="navbar-logo">
+        <img src="assets/images/photo_2024-04-21_05-35-08.jpg" alt="logo" class="logo">
+        <span class="logo-text">LiteraSelf</span>
+    </a>
+    <div class="navbar-section-left">
+        
+    </div>
+    <div class="navbar-section-right">
+        <a routerLink="/library" class="navbar-item">Библиотека</a>
+        <a href="/reviews" class="navbar-item">Рецензии</a>
+        <ng-container *ngIf="!logged">
+        <a href="/login" class="navbar-item">Регистрация/Вход</a>
+        </ng-container>
+        <ng-container *ngIf="logged">
+        <a routerLink="/profile" class="navbar-logo">
+            <img src="https://w7.pngwing.com/pngs/462/470/png-transparent-drawing-che-guevara-celebrities-white-mammal.png" alt="profile" class="profile">
+        </a>
+        </ng-container>
+    </div>
+  </nav>
+
+
+  <div class="registration-container">
+    <div class="registration-form">
+      <h1>Регистрация</h1>
+      <input type="text" placeholder="Логин" [(ngModel)]="newUser.username" required>
+      <input type="password" placeholder="Пароль" [(ngModel)]="newUser.password" required>
+      <input type="password" placeholder="Подтвердите пароль" [(ngModel)]="newUser.password2" required>
+      <button (click)="registration()">Зарегистрироваться</button>
+      <p class="login-prompt">Уже есть аккаунт? <a routerLink="/login">Войти</a></p>
+    </div>
+  </div>

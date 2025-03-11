@@ -1,0 +1,100 @@
+.hero-section {
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  color: white; 
+  text-align: center;
+  padding: 200px 50px; 
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+.text-content {
+  position: relative;
+  z-index: 2; 
+}
+
+.buttons button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin: 10px;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.buttons button:hover {
+  background-color: #0056b3;
+}
+
+.text-content a {
+  color: #aad4ff;
+}
+
+.text-content a:hover {
+  color: #fff;
+}
+
+.hero-section h1 {
+  margin-bottom: 20px;
+  font-size: 2.5em;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+
+
+.navbar {
+  background-color: #f6efee;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; 
+  width: 100%;
+}
+
+.navbar-logo, .navbar-section-right {
+  display: flex;
+  align-items: center;
+}
+
+.logo, .profile {
+  height: 60px;
+  width: auto;
+  margin-right: 10px;
+  border-radius: 30px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.logo-text {
+  font-weight: 600;
+  font-size: 20px;
+  color: #a55747;
+}
+
+.navbar-item {
+  color: #a55747;
+  text-decoration: none;
+  font-size: 16px;
+  padding: 8px 16px;
+}
+
+.navbar-item:hover {
+  background-color: #bcc5f1;
+  color: #ffffff;
+  border-radius: 4px;
+}

@@ -1,0 +1,42 @@
+<nav class="navbar">
+    <a routerLink="/home" class="navbar-logo">
+      <img src="assets/images/photo_2024-04-21_05-35-08.jpg" alt="logo" class="logo">
+      <span class="logo-text">LiteraSelf</span>
+    </a>
+    <div class="navbar-section-left">
+      
+    </div>
+    <div class="navbar-section-right">
+      <a routerLink="/library" class="navbar-item">Библиотека</a>
+      <a href="/search" class="navbar-item">Рецензии</a>
+      <ng-container *ngIf="!logged">
+        <a href="/login" class="navbar-item">Регистрация/Вход</a>
+      </ng-container>
+      <ng-container *ngIf="logged">
+        <a routerLink="/profile" class="navbar-logo">
+          <img src="https://w7.pngwing.com/pngs/462/470/png-transparent-drawing-che-guevara-celebrities-white-mammal.png" alt="profile" class="profile">
+        </a>
+      </ng-container>
+    </div>
+</nav>
+
+
+<div class="book-detail">
+  <div class="book-header">
+    <h2>{{ book.title }} ({{ book.publishDate }})</h2>
+  </div>
+  <div class="book-content">
+    <img src="{{ book.thumbnail }}" alt="Обложка книги {{ book.title }}" class="book-thumbnail">
+    <div class="book-info">
+      <p class="book-description">{{ book.description }}</p>
+      <p class="book-authors">Автор(ы): {{ book.author?.name }} {{ book.author?.surname }}</p>
+      <p class="book-genre">Жанр: {{ book.genre }}</p>
+      <p *ngIf="book.averageRating !== null" class="book-rating">Рейтинг: {{ book.averageRating }} из 5</p>
+    </div>
+  </div>
+  <div class="book-actions">
+    <button (click)="goBack()" class="btn-back">Вернуться назад</button>
+  </div>
+</div>
+
+
