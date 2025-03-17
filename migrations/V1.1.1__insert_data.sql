@@ -1,4 +1,4 @@
-INSERT INTO books_amazon (unnamed_0, title, author, main_genre, sub_genre, type, price, rating, no_of_people_rated, urls) VALUES
+INSERT INTO books_amazon (unnamed_0, title, author, main_genre, sub_genre, type, price, rating, people_rated, urls) VALUES
     (0, 'The Complete Novel of Sherlock Holmes', 'Arthur Conan Doyle', 'Arts, Film & Photography', 'Cinema & Broadcast', 'Paperback', 169.0, 4.4, 19923.0, 'https://www.amazon.in/Complete-Novels-Sherlock-Holmes/dp/8175994312/ref=zg_bs_g_1318054031_d_sccl_1/000-0000000-0000000?psc=1'),
     (1, 'Black Holes (L) : The Reith Lectures [Paperback] Hawking, Stephen', 'Stephen Hawking', 'Arts, Film & Photography', 'Cinema & Broadcast', 'Paperback', 99.0, 4.5, 7686.0, 'https://www.amazon.in/Black-Holes-Lectures-Stephen-Hawking/dp/085750357X/ref=zg_bs_g_1318054031_d_sccl_2/000-0000000-0000000?psc=1'),
     (2, 'The Kite Runner', 'Khaled Hosseini', 'Arts, Film & Photography', 'Cinema & Broadcast', 'Kindle Edition', 175.75, 4.6, 50016.0, 'https://www.amazon.in/Kite-Runner-Khaled-Hosseini-ebook/dp/B00B0CR0O6/ref=zg_bs_g_1318054031_d_sccl_3/000-0000000-0000000?psc=1'),
