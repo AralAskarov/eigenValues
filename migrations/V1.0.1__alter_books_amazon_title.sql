@@ -1,0 +1,1 @@
+ALTER TABLE books_amazon ALTER COLUMN title TYPE TEXT;

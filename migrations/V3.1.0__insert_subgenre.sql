@@ -1,4 +1,4 @@
-INSERT INTO sub_genres (title, main_genre, no_of_books, urls) VALUES
+INSERT INTO sub_genres (title, main_genre, no_of_books, url) VALUES
     ('Architecture', 'Arts, Film & Photography', 100.0, 'https://www.amazon.in/gp/bestsellers/books/1318053031'),
     ('Cinema & Broadcast', 'Arts, Film & Photography', 100.0, 'https://www.amazon.in/gp/bestsellers/books/1318054031'),
     ('Dance', 'Arts, Film & Photography', 100.0, 'https://www.amazon.in/gp/bestsellers/books/1318055031'),
