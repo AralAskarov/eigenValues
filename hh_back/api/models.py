@@ -50,5 +50,43 @@ class Review(models.Model):
         return self.comment
 
 
+class Recommendation(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    book_title = models.CharField(max_length=255)
+    recommended_books = models.JSONField()  # список рекомендованных книг
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"Recommendation for {self.user.username} - {self.book_title}"
+
+
+class UserPreference(models.Model):
+    """
+    Модель для хранения предпочтений пользователя.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='preferences')
+    category = models.CharField(max_length=255)  # Тип предпочтения (например, "Main Genre", "Author")
+    value = models.CharField(max_length=255)  # Значение предпочтения (например, "Science Fiction", "J.K. Rowling")
+    score = models.FloatField()  # Оценка/балл предпочтения
+    weight = models.FloatField()
+    class Meta:
+        unique_together = ('user', 'category', 'value', 'weight')  # Уникальная пара: user + (attribute_type, attribute_value)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.category}: {self.value} (Score: {self.score})"
+
+
+class GlobalPreference(models.Model):
+    """
+    Модель для хранения глобальных предпочтений.
+    """
+    category = models.CharField(max_length=255)  # Тип предпочтения (например, "Main Genre", "Author")
+    value = models.CharField(max_length=255)  # Значение предпочтения (например, "Science Fiction", "J.K. Rowling")
+    score = models.FloatField()  # Оценка/балл предпочтения
+
+    class Meta:
+        unique_together = ('category', 'value')  # Уникальная пара: (attribute_type, attribute_value)
+
+    def __str__(self):
+        return f"{self.category}: {self.value} (Score: {self.score})"
 
