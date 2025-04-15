@@ -6,14 +6,15 @@ from rest_framework.views import APIView
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from rest_framework.decorators import api_view
-from api.models import Book, Review, Author, Recommendation
+from api.models import Book, Review, Author, Recommendation, UserPreference, GlobalPreference
 from django.db.models import Q
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from api.serializers import ReviewSerializer, RecommendationSerializer, BookSerializer
+from api.serializers import ReviewSerializer, RecommendationSerializer, BookSerializer, PreferencesSerializer
 from django.shortcuts import get_object_or_404
-
+from collections import defaultdict
+import requests
 import logging
 from django.db import transaction
 
@@ -103,11 +104,10 @@ def profile(request):
         user.save()
         return Response({'message': 'Profile updated successfully'})
 
-
-
+FASTAPI_RECOMMENDATION_URL = "http://localhost:8001/recommendations"
 
 @api_view(['GET', 'POST'])
-def get_recommendations(request):
+def get_recommendations(request, user_id):
     if request.method == 'POST':
         # Получение данных из тела запроса
         user_id = request.data.get('user_id')
@@ -116,34 +116,46 @@ def get_recommendations(request):
         if not user_id or not book_titles:
             return Response({'error': 'user_id и user_book_titles обязательны'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Логика рекомендаций (можно настроить по-своему)
-        recommendations = [f"Рекомендую книгу на основе: {title}" for title in book_titles]
+        # Отправка запроса на FastAPI сервер
+        try:
+            fastapi_response = requests.post(FASTAPI_RECOMMENDATION_URL, json={
+                "user_id": user_id,
+                "user_book_titles": book_titles
+            })
+            if fastapi_response.status_code != 200:
+                return Response({'error': 'Ошибка на стороне FastAPI-сервера'}, status=fastapi_response.status_code)
 
-        # Сохраняем рекомендации в БД
-        for title in book_titles:
-            Recommendation.objects.create(
-                user_id=user_id,
-                book_title=title,
-                recommended_books=recommendations
-            )
+            fastapi_data = fastapi_response.json()
+            recommendations = fastapi_data.get('recommended_titles', [])
 
-        return Response({
-            'user_id': user_id,
-            'recommended_titles': recommendations
-        }, status=status.HTTP_201_CREATED)
+            # Сохраняем рекомендации в БД
+            for title in book_titles:
+                Recommendation.objects.create(
+                    user_id=user_id,
+                    book_title=title,
+                    recommended_books=recommendations
+                )
+
+            return Response({
+                'user_id': user_id,
+                'recommended_titles': recommendations
+            }, status=status.HTTP_201_CREATED)
+
+        except requests.RequestException as e:
+            return Response({'error': f'Ошибка запроса к FastAPI-серверу: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     elif request.method == 'GET':
         # Получение рекомендаций из базы данных для пользователя
         user_id = request.GET.get('user_id')
-        
+
         if not user_id:
             return Response({'error': 'user_id обязателен'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         recommendations = Recommendation.objects.filter(user_id=user_id)
-        
+
         if not recommendations:
             return Response({'message': 'Рекомендации для данного пользователя не найдены'}, status=status.HTTP_404_NOT_FOUND)
-        
+
         # Сериализация и возврат списка рекомендаций
         serializer = RecommendationSerializer(recommendations, many=True)
         return Response(serializer.data)
@@ -159,34 +171,31 @@ class UserPreferencesView(APIView):
     # permission_classes = [IsAuthenticated, YourPermissionToCheckUserMatch]
 
     def get(self, request, user_id, format=None):
-        """
-        Обрабатывает GET /user/{user_id}/preferences/
-        """
-        logger.info(f"Запрос предпочтений для user_id={user_id}")
-        user = get_object_or_404(User, pk=user_id)  # Получаем пользователя или возвращаем 404
+        logger.info(f"[START] Получение предпочтений пользователя: user_id={user_id}")
+
+        user = get_object_or_404(User, pk=user_id)
+        logger.debug(f"[USER FOUND] user_id={user.id}, username={user.username}")
 
         try:
-            # Получаем все предпочтения пользователя из БД
             preferences_qs = UserPreference.objects.filter(user=user).values(
                 'category', 'value', 'score', 'weight'
             )
+            logger.debug(f"[QUERYSET] Получено {preferences_qs.count()} предпочтений из базы")
 
-            # Группируем в нужную структуру словаря
             preferences_dict = defaultdict(dict)
             for pref in preferences_qs:
-                attr_type_key = pref['category']  # 'Main Genre', 'Author', etc.
+                logger.debug(f"[PREFERENCE] {pref}")
+                attr_type_key = pref['category']
                 preferences_dict[attr_type_key][pref['value']] = pref['score']
-                
-            # Сериализуем словарь
+
             serializer = PreferencesSerializer(instance=dict(preferences_dict))
+            logger.info(f"[SUCCESS] Предпочтения успешно сериализованы для user_id={user_id}")
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         except Exception as e:
-            logger.exception(f"Ошибка при получении предпочтений для user_id={user_id}: {e}")
-            return Response(
-                {"error": "An internal error occurred"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+                logger.exception(f"[ERROR] Ошибка при получении предпочтений: user_id={user_id}, ошибка: {e}")
+                return Response({"error": "An internal error occurred"},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
     @transaction.atomic  # Гарантирует, что все обновления будут выполнены или ни одного
     def post(self, request, user_id, format=None):
@@ -242,7 +251,45 @@ class UserPreferencesView(APIView):
         else:
             logger.warning(f"Ошибка валидации данных при обновлении предпочтений user_id={user_id}: {serializer.errors}")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get_all_user_preferences(self, request, format=None):
+        """
+        Получает предпочтения всех пользователей.
+        """
+        logger.info("[START] Получение предпочтений всех пользователей")
 
+        try:
+            # Получаем все предпочтения
+            preferences_qs = UserPreference.objects.select_related("user").values(
+                'user_id', 'user__username', 'category', 'value', 'score', 'weight'
+            )
+            logger.debug(f"[QUERYSET] Получено {preferences_qs.count()} предпочтений из базы")
+
+            result = defaultdict(lambda: defaultdict(dict))
+            for pref in preferences_qs:
+                user_id = pref['user_id']
+                username = pref['user__username']
+                category = pref['category']
+                value = pref['value']
+                score = pref['score']
+
+                result[user_id]['username'] = username
+                result[user_id]['preferences'][category][value] = score
+
+            # Преобразуем в список для сериализации
+            data = []
+            for user_id, info in result.items():
+                data.append({
+                    "user_id": user_id,
+                    "username": info["username"],
+                    "preferences": info["preferences"]
+                })
+
+            logger.info("[SUCCESS] Все предпочтения успешно собраны")
+            return Response(data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logger.exception(f"[ERROR] Ошибка при получении всех предпочтений: {e}")
+            return Response({"error": "An internal error occurred"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class GlobalPreferencesView(APIView):
     """
@@ -274,6 +321,42 @@ class GlobalPreferencesView(APIView):
                 {"error": "An internal error occurred"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+        def post(self, request, format=None):
+            """
+            Обновляет глобальные предпочтения. 
+            Ожидается список объектов с полями: category, value, score.
+            """
+        logger.info("Запрос на обновление глобальных предпочтений")
+        try:
+            data = request.data
+            if not isinstance(data, list):
+                return Response({"error": "Expected a list of preferences"}, status=status.HTTP_400_BAD_REQUEST)
+
+            for pref in data:
+                category = pref.get("category")
+                value = pref.get("value")
+                score = pref.get("score")
+
+                if not all([category, value, score]):
+                    logger.warning(f"Некорректные данные: {pref}")
+                    continue
+
+                # Обновляем или создаём новую глобальную предпочтение
+                GlobalPreference.objects.update_or_create(
+                    category=category,
+                    value=value,
+                    defaults={"score": score}
+                )
+
+            return Response({"status": "updated"}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logger.exception(f"Ошибка при обновлении глобальных предпочтений: {e}")
+            return Response(
+                {"error": "An internal error occurred"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
 
 
 

@@ -40,7 +40,7 @@ class AuthorSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'age', 'is_superuser']
+        fields = ['id', 'username', 'is_superuser']
 
 class BookSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)

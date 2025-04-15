@@ -13,11 +13,10 @@ urlpatterns = [
     path('api/review/<int:pk>/', review_detail),
     path("api/registration/", registration),
     path('api/profile/', profile, name='profile'),
-    path('get_recommendations', get_recommendations, name='get_recommendations'),
+    path('user/<int:user_id>/get_recommendations', get_recommendations, name='get_recommendations'),
     # Путь для предпочтений пользователя
     path('user/<int:user_id>/preferences/', views.UserPreferencesView.as_view(), name='user-preferences'),
     path('global/preferences/', views.GlobalPreferencesView.as_view(), name='global-preferences'),
     path('api/search_books/', search_books, name='search_books'),
-
-
+    path('users/preferences', views.UserPreferencesView.as_view, name = 'user-preferences')
 ]
