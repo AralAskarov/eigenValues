@@ -251,6 +251,7 @@ class UserPreferencesView(APIView):
         else:
             logger.warning(f"Ошибка валидации данных при обновлении предпочтений user_id={user_id}: {serializer.errors}")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
     def get_all_user_preferences(self, request, format=None):
         """
         Получает предпочтения всех пользователей.
@@ -260,14 +261,12 @@ class UserPreferencesView(APIView):
         try:
             # Получаем все предпочтения
             preferences_qs = UserPreference.objects.select_related("user").values(
-                'user_id', 'user__username', 'category', 'value', 'score', 'weight'
+                 'category', 'value', 'score', 'weight'
             )
             logger.debug(f"[QUERYSET] Получено {preferences_qs.count()} предпочтений из базы")
 
             result = defaultdict(lambda: defaultdict(dict))
             for pref in preferences_qs:
-                user_id = pref['user_id']
-                username = pref['user__username']
                 category = pref['category']
                 value = pref['value']
                 score = pref['score']

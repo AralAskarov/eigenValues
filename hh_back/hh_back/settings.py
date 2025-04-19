@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     #local apps:
     "api",
     "main",
@@ -51,7 +50,7 @@ INSTALLED_APPS = [
     # third part apps
     "rest_framework",
     "rest_framework_simplejwt",
-
+    'rest_framework.authtoken',
     "corsheaders",
     
 ]

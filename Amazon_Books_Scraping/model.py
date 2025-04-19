@@ -95,7 +95,7 @@ class RecommendationResponse(BaseModel):
     recommended_titles: List[str]
 
 def get_db_service() -> ServiceAPI:
-    return ServiceAPI(base_url="http://localhost:8080")
+    return ServiceAPI(base_url="http://localhost:8000")
 
 @app.post("/recommendations", response_model=RecommendationResponse)
 def recommendations_endpoint(request: RecommendationRequest, db_api: ServiceAPI = Depends(get_db_service)):
@@ -270,7 +270,7 @@ def compute_recommendations(user_id: int, user_book_titles: List[str], db_api: S
     rec_indices = filtered_indices[:10]
     recommended_titles = clean_data['Title'].iloc[rec_indices].tolist()
     return {"recommended_titles": recommended_titles}
-db_api = ServiceAPI(base_url="http://localhost:8080")
+db_api = ServiceAPI(base_url="http://localhost:8000")
 books = pd.read_csv('./Books_df.csv')  # change to your path
 clean_data = books.reset_index(drop=True)
 encoder = OneHotEncoder(sparse_output=False)
